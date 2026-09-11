@@ -13,26 +13,30 @@ jobs:
     steps:
       # 1. Checkout del código
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 2. Instalar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '22 .x'
 
       # 3. Instalar Newman
       - name: Install Newman
         run: npm install -g newman
 
-      # 4. Ejecutar colección
+      # 4. Instalar Newman
+      - name: Install Newman HTML Reporter
+        run: npm install -g newman-reporter-html
+
+      # 5. Ejecutar colección
       - name: Run Postman Collection
         run: |
           newman run todoly.postman_collection.json \
             -r cli,html \
             --reporter-html-export newman/report.html
 
-      # 5. Guardar reporte como artefacto
+      # 6. Guardar reporte como artefacto
       - name: Upload Newman Report
         uses: actions/upload-artifact@v4
         with:
