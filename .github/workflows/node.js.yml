@@ -33,63 +33,32 @@ jobs:
 
       # 4. Instalar Newman Reporters
       - name: Install Newman Reporters
-        run: npm install -g newman-reporter-html newman-reporter-json
+        run: npm install -g newman-reporter-allurereport
 
       # 5. Instalar Allure
       - name: Install Allure
         run: npm install -g allure-commandline
 
-      # 6. Ejecutar colección con reportes en JSON y HTML
+      # 6. Ejecutar colección con reporter de Allure
       - name: Run Postman Collection
         run: |
-          mkdir -p newman allure-results
+          mkdir -p allure-results
           newman run Todoly.postman_collection.json \
             -e Todoly_UAT.postman_environment.json \
             --env-var "userName=$API_USER" \
             --env-var "password=$API_PASSWORD" \
-            -r cli,json \
-            --reporter-json-export newman/results.json
+            -r cli,allurereport \
+            --reporter-allurereport-export allure-results
 
       # 7. Generar reporte de Allure
       - name: Generate Allure Report
         if: always()
-        run: |
-          allure generate allure-results -o allure-report --clean
-
-      # 8. Copiar resultados JSON a directorio de Allure (opcional, para mejor tracking)
-      - name: Process Newman Results for Allure
-        if: always()
-        run: |
-          node -e "
-          const fs = require('fs');
-          const results = JSON.parse(fs.readFileSync('newman/results.json', 'utf8'));
-          const allureResults = [];
-          
-          results.run.executions.forEach((execution, index) => {
-            allureResults.push({
-              name: execution.item.name,
-              status: execution.response.code >= 200 && execution.response.code < 300 ? 'passed' : 'failed',
-              statusDetails: {
-                message: execution.response.reason
-              },
-              stop: new Date(execution.cursor.iteration).getTime() + execution.response.responseTime
-            });
-          });
-          
-          fs.writeFileSync('allure-results/results.json', JSON.stringify(allureResults, null, 2));
-          "
-
-      # 9. Regenerar Allure con los datos procesados
-      - name: Generate Final Allure Report
-        if: always()
         run: allure generate allure-results -o allure-report --clean
 
-      # 10. Guardar reportes como artefactos
+      # 8. Guardar reportes como artefactos
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: test-reports
-          path: |
-            newman/results.json
-            allure-report/
+          path: allure-report/
