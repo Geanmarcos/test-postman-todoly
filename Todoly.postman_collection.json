@@ -1,0 +1,485 @@
+{
+  "info": {
+    "_postman_id": "58b382a9-7fb0-49ab-a2ef-2de2e9f5a4e1",
+    "name": "Todoly",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "23357042"
+  },
+  "item": [
+    {
+      "name": "Project",
+      "item": [
+        {
+          "name": "open-authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n    var token = response.TokenString;\r\n    pm.collectionVariables.set(\"token\", token);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/authentication/token.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "token.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "crear-project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n \r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n    var id = response.Id; \r\n    pm.collectionVariables.set(\"projectId\", id);\r\n});\r\n\r\n// Validar nombre de proyecto\r\npm.test(\"Verificar nombre de proyecto\", function () {\r\n    pm.expect(response.Content).to.eql(pm.collectionVariables.get(\"projectName\"));\r\n});\r\n\r\n// Validar icono\r\npm.test(\"Verificar icono\", function () {\r\n    let icon = parseInt(pm.collectionVariables.get(\"icon\"), 10);\r\n    pm.expect(response.Icon).to.eql(icon);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"Content\": \"{{projectName}}\",\r\n    \"Icon\": {{icon}}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update-project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar nombre de proyecto actualizado\r\npm.test(\"Verificar nombre de proyecto actualizado\", function () {\r\n    pm.expect(response.Content).to.eql(pm.collectionVariables.get(\"newProjectName\"));\r\n});\r\n\r\n// Validar icono actualizado\r\npm.test(\"Verificar icono actualizado\", function () {\r\n    let icon = parseInt(pm.collectionVariables.get(\"newIcon\"), 10);\r\n    pm.expect(response.Icon).to.eql(icon);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"Content\": \"{{newProjectName}}\",\r\n    \"Icon\": {{newIcon}}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "search-project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar nombre de proyecto actualizado\r\npm.test(\"Verificar nombre de proyecto actualizado\", function () {\r\n    pm.expect(response.Content).to.eql(pm.collectionVariables.get(\"newProjectName\"));\r\n});\r\n\r\n// Validar icono actualizado\r\npm.test(\"Verificar icono actualizado\", function () {\r\n    let icon = parseInt(pm.collectionVariables.get(\"newIcon\"), 10);\r\n    pm.expect(response.Icon).to.eql(icon);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar nombre de proyecto actualizado\r\npm.test(\"Verificar nombre de proyecto actualizado\", function () {\r\n    pm.expect(response.Content).to.eql(pm.collectionVariables.get(\"newProjectName\"));\r\n});\r\n\r\n// Validar icono actualizado\r\npm.test(\"Verificar icono actualizado\", function () {\r\n    let icon = parseInt(pm.collectionVariables.get(\"newIcon\"), 10);\r\n    pm.expect(response.Icon).to.eql(icon);\r\n});\r\n\r\n// Validar eliminar\r\npm.test(\"Verificar eliminar\", function () {\r\n    pm.expect(response.Deleted).to.eql(true);\r\n});\r\n\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/{{projectId}}.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "projects",
+                "{{projectId}}.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Item",
+      "item": [
+        {
+          "name": "create-item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n    var itemId = response.Id;\r\n    pm.collectionVariables.set(\"itemId\", itemId);\r\n});\r\n\r\n// Validar nombre de item\r\npm.test(\"Verificar nombre de item\", function () {\r\n    var Content = response.Content\r\n    pm.expect(Content).to.eql(pm.collectionVariables.get(\"itemName\"));\r\n});\r\n\r\n// Validar item en el projecto correcto\r\npm.test(\"Verificar item en el projecto correcto\", function () {\r\n    var projectIdr = response.ProjectId; // project id del response\r\n    let projectIdc = parseInt(pm.collectionVariables.get(\"projectId\"), 10); // project id de la coleccion\r\n    pm.expect(projectIdr).to.eql(projectIdc);\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"Content\": \"{{itemName}}\",\r\n    \"ProjectId\": \"{{projectId}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/items.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "items.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update-item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar nombre de item actualizado\r\npm.test(\"Verificar nombre de item actualizado\", function () {\r\n    var Content = response.Content\r\n    pm.expect(Content).to.eql(pm.collectionVariables.get(\"newItemName\"));\r\n});\r\n\r\n// Validar checked de item actualizado\r\npm.test(\"Verificar checked actualizado\", function () {\r\n    const checkedItemR = response.Checked;\r\n    const checkedItemC = JSON.parse(\r\n        pm.collectionVariables.get(\"checkedItem\")\r\n    );\r\n\r\n    pm.expect(checkedItemR).to.eql(checkedItemC);\r\n});\r\n\r\n// Validar item en el projecto correcto\r\npm.test(\"Verificar item en el projecto correcto\", function () {\r\n    var projectIdr = response.ProjectId; // project id del response\r\n    let projectIdc = parseInt(pm.collectionVariables.get(\"projectId\"), 10); // project id de la coleccion\r\n    pm.expect(projectIdr).to.eql(projectIdc);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"Content\": \"{{newItemName}}\",\r\n    \"ProjectId\": \"{{projectId}}\",\r\n    \"Checked\": {{checkedItem}}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/items/{{itemId}}.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "items",
+                "{{itemId}}.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "search-item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar nombre de item actualizado\r\npm.test(\"Verificar nombre de item actualizado\", function () {\r\n    var Content = response.Content\r\n    pm.expect(Content).to.eql(pm.collectionVariables.get(\"newItemName\"));\r\n});\r\n\r\n// Validar checked de item actualizado\r\npm.test(\"Verificar checked actualizado\", function () {\r\n    const checkedItemR = response.Checked;\r\n    const checkedItemC = JSON.parse(\r\n        pm.collectionVariables.get(\"checkedItem\")\r\n    );\r\n\r\n    pm.expect(checkedItemR).to.eql(checkedItemC);\r\n});\r\n// Validar item en el projecto correcto\r\npm.test(\"Verificar item en el projecto correcto\", function () {\r\n    var projectIdr = response.ProjectId; // project id del response\r\n    let projectIdc = parseInt(pm.collectionVariables.get(\"projectId\"), 10); // project id de la coleccion\r\n    pm.expect(projectIdr).to.eql(projectIdc);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/items/{{itemId}}.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "items",
+                "{{itemId}}.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar nombre de item actualizado\r\npm.test(\"Verificar nombre de item actualizado\", function () {\r\n    var Content = response.Content\r\n    pm.expect(Content).to.eql(pm.collectionVariables.get(\"newItemName\"));\r\n});\r\n\r\n// Validar item en el projecto correcto\r\npm.test(\"Verificar item en el projecto correcto\", function () {\r\n    var projectIdr = response.ProjectId; // project id del response\r\n    let projectIdc = parseInt(pm.collectionVariables.get(\"projectId\"), 10); // project id de la coleccion\r\n    pm.expect(projectIdr).to.eql(projectIdc);\r\n});\r\n\r\n// Validar eliminar item\r\npm.test(\"Verificar eliminar\", function () {\r\n    pm.expect(response.Deleted).to.eql(true);\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/items/{{itemId}}.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "items",
+                "{{itemId}}.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "close-authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var response = pm.response.json(); \r\n\r\n// Validar que la respuesta sea en formato JSON\r\npm.test(\"Respuesta es JSON\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\n// Validar que el status sea 200\r\npm.test(\"Status code es 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\n// Validar finalizacion de token de sesion correcta\r\npm.test(\"Verificar  finalizacion de token de sesion correcta\", function () {\r\n    var token = response.TokenString;\r\n    pm.expect(token).to.eql(pm.collectionVariables.get(\"token\"));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/authentication/token.{{formatType}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "token.{{formatType}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{userName}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "formatType",
+      "value": "json"
+    },
+    {
+      "key": "projectId",
+      "value": ""
+    },
+    {
+      "key": "projectName",
+      "value": "JB API TEST"
+    },
+    {
+      "key": "icon",
+      "value": "4"
+    },
+    {
+      "key": "newProjectName",
+      "value": "JB API TEST V2"
+    },
+    {
+      "key": "newIcon",
+      "value": "2"
+    },
+    {
+      "key": "itemId",
+      "value": ""
+    },
+    {
+      "key": "itemName",
+      "value": "JB API TEST - ITEM"
+    },
+    {
+      "key": "newItemName",
+      "value": "JB API TEST - ITEM V2"
+    },
+    {
+      "key": "itemType",
+      "value": "2"
+    },
+    {
+      "key": "newItemType",
+      "value": "3"
+    },
+    {
+      "key": "checkedItem",
+      "value": "true"
+    }
+  ]
+}
