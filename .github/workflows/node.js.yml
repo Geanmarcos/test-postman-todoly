@@ -33,27 +33,31 @@ jobs:
 
       # 4. Instalar Newman Reporters
       - name: Install Newman Reporters
-        run: npm install -g newman-reporter-allurereport
+        run: npm install --save-dev newman-reporter-allure
 
-      # 5. Instalar Allure
-      - name: Install Allure
-        run: npm install -g allure-commandline
-
-      # 6. Ejecutar colección con reporter de Allure
+      # 5. Ejecutar colección con reporter Allure
       - name: Run Postman Collection
         run: |
           mkdir -p allure-results
-          newman run Todoly.postman_collection.json \
+          npx newman run Todoly.postman_collection.json \
             -e Todoly_UAT.postman_environment.json \
             --env-var "userName=$API_USER" \
             --env-var "password=$API_PASSWORD" \
-            -r cli,allurereport \
-            --reporter-allurereport-export allure-results
+            -reporters cli,allure \
+            --reporter-allure-resultsDir allure-results
 
-      # 7. Generar reporte de Allure
+      # 6. Generar reporte de Allure
       - name: Generate Allure Report
         if: always()
         run: allure generate allure-results -o allure-report --clean
+
+      # 7. Guardar reporte como artefacto
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: allure-report/
 
       # 8. Guardar reportes como artefactos
       - name: Upload Reports
@@ -61,4 +65,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-reports
-          path: allure-report/
+          path: |
+            newman/results.json
+            allure-report/
