@@ -205,7 +205,7 @@ npm install -g newman-reporter-html
 ### Ejecutar colección
 
 ```bash
-newman run todoly.postman_collection.json \
+newman run Todoly.postman_collection.json \
 -e Todoly_UAT.postman_environment.json \
 --env-var "userName=USUARIO" \
 --env-var "password=PASSWORD" \
