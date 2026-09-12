@@ -10,14 +10,20 @@ jobs:
   run-newman:
     runs-on: ubuntu-latest
 
+    env:
+      API_USER: ${{ secrets.API_USER }}
+      API_PASSWORD: ${{ secrets.API_PASSWORD }}
+
+
+
     steps:
       # 1. Checkout del código
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # 2. Instalar Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24.x'
 
@@ -32,13 +38,16 @@ jobs:
       # 5. Ejecutar colección
       - name: Run Postman Collection
         run: |
-          newman run todoly.postman_collection.json \
+          newman run Todoly.postman_collection.json \
+            -e Todoly_UAT.postman_environment.json \
+            --env-var "userName=$API_USER" \
+            --env-var "password=$API_PASSWORD" \
             -r cli,html \
             --reporter-html-export newman/report.html
 
       # 6. Guardar reporte como artefacto
       - name: Upload Newman Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: newman-report
           path: newman/report.html
