@@ -10,44 +10,102 @@ jobs:
   run-newman:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     env:
       API_USER: ${{ secrets.API_USER }}
       API_PASSWORD: ${{ secrets.API_PASSWORD }}
 
-
-
     steps:
-      # 1. Checkout del código
+      # 1. Descargar el código fuente del repositorio
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # 2. Instalar Node.js
+      # 2. Configurar el entorno de ejecución Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: '24.x'
 
-      # 3. Instalar Newman
-      - name: Install Newman
-        run: npm install -g newman
+      # 3. Instalar dependencias de Node (Newman + reporter Allure + CLI de Allure, todo local)
+      - name: Install Node dependencies
+        run: npm install --save-dev newman newman-reporter-allure@latest allure@latest
 
-      # 4. Instalar Newman
-      - name: Install Newman HTML Reporter
-        run: npm install -g newman-reporter-html
-
-      # 5. Ejecutar colección
+      # 4. Ejecutar los tests de Postman y guardar los resultados crudos (.json)
       - name: Run Postman Collection
         run: |
-          newman run Todoly.postman_collection.json \
+          mkdir -p output/allure-results
+          npx newman run Todoly.postman_collection.json \
             -e Todoly_UAT.postman_environment.json \
             --env-var "userName=$API_USER" \
             --env-var "password=$API_PASSWORD" \
-            -r cli,html \
-            --reporter-html-export newman/report.html
+            --reporters cli,allure \
+            --reporter-allure-resultsDir output/allure-results
+        continue-on-error: true
 
-      # 6. Guardar reporte como artefacto
-      - name: Upload Newman Report
-        uses: actions/upload-artifact@v7
+      # 4b. Verificación rápida de que sí se generaron resultados
+      - name: Debug - Verify allure-results
+        if: always()
+        run: |
+          echo "Contenido de output/allure-results:"
+          ls -la output/allure-results/ || echo "La carpeta no existe"
+          find output/allure-results -name "*.json" | wc -l
+
+      # 5. Descargar el reporte previo publicado en gh-pages (para recuperar el historial)
+      - name: Get previous report from gh-pages
+        uses: actions/checkout@v7
+        if: always()
+        continue-on-error: true
         with:
-          name: newman-report
-          path: newman/report.html
+          ref: gh-pages
+          path: gh-pages
+
+      # 5b. Recuperar el archivo de historial (Allure 3 usa un único .jsonl, no una carpeta)
+      - name: Restore history file
+        if: always()
+        run: |
+          mkdir -p .allure-history
+          if [ -f gh-pages/history.jsonl ]; then
+            cp gh-pages/history.jsonl .allure-history/history.jsonl
+            echo "Historial previo restaurado."
+          else
+            echo "No hay historial previo, se creara desde cero."
+          fi
+
+      # 5c. Config de Allure 3 apuntando al historial persistente
+      - name: Create Allure config
+        if: always()
+        run: |
+          cat > .allurerc.mjs <<'EOF'
+          export default {
+            name: "Newman Todoly Tests",
+            output: "allure-report",
+            historyPath: "./.allure-history/history.jsonl",
+            appendHistory: true,
+          };
+          EOF
+
+      # 6. Generar el reporte con Allure Report v3
+      - name: Generate Allure Report (v3)
+        if: always()
+        run: npx allure generate output/allure-results
+
+      # 6b. Copiar el historial actualizado dentro del reporte para publicarlo junto con él
+      - name: Copy updated history into report output
+        if: always()
+        run: |
+          if [ -f .allure-history/history.jsonl ]; then
+            cp .allure-history/history.jsonl allure-report/history.jsonl
+          else
+            echo "No se generó history.jsonl en esta corrida, se omite copia."
+          fi
+
+      # 7. Desplegar los archivos HTML estáticos procesados a GitHub Pages
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
