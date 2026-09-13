@@ -1,0 +1,23 @@
+var response = pm.response.json(); 
+
+// Validar que el status sea 200
+pm.test("Status code es 200", function () {
+    pm.response.to.have.status(200);
+});
+
+// Validar nombre de proyecto actualizado
+pm.test("Verificar nombre de proyecto actualizado", function () {
+    pm.expect(response.Content).to.eql(pm.collectionVariables.get("newProjectName"));
+});
+
+// Validar icono actualizado
+pm.test("Verificar icono actualizado", function () {
+    let icon = parseInt(pm.collectionVariables.get("newIcon"), 10);
+    pm.expect(response.Icon).to.eql(icon);
+});
+
+// Validar eliminar
+pm.test("Verificar eliminar", function () {
+    pm.expect(response.Deleted).to.eql(true);
+});
+
