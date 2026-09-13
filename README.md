@@ -1,4 +1,4 @@
-# 🚀 Todo.ly API Test Automation
+# 🚀 Todo.ly API Test Automation - GT
 
 Automatización de pruebas para la API REST de Todo.ly utilizando Postman, Newman y GitHub Actions.
 
