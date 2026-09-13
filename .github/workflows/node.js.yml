@@ -45,7 +45,7 @@ jobs:
             -e Todoly_UAT.postman_environment.json \
             --env-var "userName=$API_USER" \
             --env-var "password=$API_PASSWORD" \
-            -reporters cli,allure \
+            --reporters cli,allure \
             --reporter-allure-resultsDir allure-results
         continue-on-error: true
 
