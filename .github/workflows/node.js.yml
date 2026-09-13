@@ -10,7 +10,6 @@ jobs:
   run-newman:
     runs-on: ubuntu-latest
 
-    # Permisos necesarios para que el GITHUB_TOKEN pueda actualizar la rama gh-pages
     permissions:
       contents: write
 
@@ -33,7 +32,7 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
-      # 4. Instalar la ÚLTIMA versión del reporter Allure para Newman
+      # 4. Instalar el plugin de reportes Allure para Newman
       - name: Install Newman Reporters
         run: npm install --save-dev newman-reporter-allure@latest
 
@@ -55,11 +54,10 @@ jobs:
         run: |
           echo "Contenido de output/allure-results:"
           ls -la output/allure-results/ || echo "❌ La carpeta no existe"
-          count=$(find output/allure-results -name "*.json" 2>/dev/null | wc -l)
-          echo "Archivos .json encontrados: $count"
+          find output/allure-results -name "*.json" | wc -l
 
-      # 6. Descargar el historial previo desde 'gh-pages' para no perder gráficos de tendencias
-      - name: Get Allure history
+      # 6. Descargar el reporte previo publicado en gh-pages (para recuperar el historial)
+      - name: Get previous report from gh-pages
         uses: actions/checkout@v7
         if: always()
         continue-on-error: true
@@ -67,13 +65,44 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      # 7. Generar el reporte con Allure Report v3 (última versión, con historial nativo)
-      - name: Generate Allure Report (v3)
-        uses: yuvalgabay/allure-v3-report-action@v1
+      # 6b. Recuperar el archivo de historial (Allure 3 usa un único .jsonl, no una carpeta)
+      - name: Restore history file
         if: always()
-        with:
-          allure_results: output/allure-results
-          allure_history: allure-history
+        run: |
+          mkdir -p .allure-history
+          if [ -f gh-pages/history.jsonl ]; then
+            cp gh-pages/history.jsonl .allure-history/history.jsonl
+            echo "Historial previo restaurado."
+          else
+            echo "No hay historial previo, se creará desde cero."
+          fi
+
+      # 6c. Config de Allure 3 apuntando al historial persistente
+      - name: Create Allure config
+        if: always()
+        run: |
+          cat > .allurerc.mjs <<'EOF'
+          export default {
+            name: "Newman Todoly Tests",
+            output: "allure-report",
+            historyPath: "./.allure-history/history.jsonl",
+            appendHistory: true,
+          };
+          EOF
+
+      # 7. Instalar Allure 3 (última versión) y generar el reporte
+      - name: Install Allure Report
+        if: always()
+        run: npm install --save-dev allure@latest
+
+      - name: Generate Allure Report (v3)
+        if: always()
+        run: npx allure generate output/allure-results --clean
+
+      # 7b. Copiar el historial actualizado dentro del reporte para publicarlo junto con él
+      - name: Copy updated history into report output
+        if: always()
+        run: cp .allure-history/history.jsonl allure-report/history.jsonl
 
       # 8. Desplegar los archivos HTML estáticos procesados a GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
@@ -82,4 +111,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
+          publish_dir: allure-report
