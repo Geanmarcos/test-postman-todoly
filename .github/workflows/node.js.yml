@@ -32,9 +32,9 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
-      # 4. Instalar el plugin de reportes Allure para Newman
-      - name: Install Newman Reporters
-        run: npm install --save-dev newman-reporter-allure@latest
+      # 4. Instalar dependencias de Node (reporter de Allure para Newman + CLI de Allure)
+      - name: Install Node dependencies
+        run: npm install --save-dev newman-reporter-allure@latest allure@latest
 
       # 5. Ejecutar los tests de Postman y guardar los resultados crudos (.json)
       - name: Run Postman Collection
@@ -90,14 +90,10 @@ jobs:
           };
           EOF
 
-      # 7. Instalar Allure 3 (última versión) y generar el reporte
-      - name: Install Allure Report
-        if: always()
-        run: npm install --save-dev allure@latest
-
+      # 7. Generar el reporte con Allure Report v3
       - name: Generate Allure Report (v3)
         if: always()
-        run: npx allure generate output/allure-results --clean
+        run: npx allure generate output/allure-results
 
       # 7b. Copiar el historial actualizado dentro del reporte para publicarlo junto con él
       - name: Copy updated history into report output
