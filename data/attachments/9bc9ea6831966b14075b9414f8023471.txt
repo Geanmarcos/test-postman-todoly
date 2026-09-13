@@ -1,5 +1,0 @@
-{
-    "Content": "JB API TEST - ITEM V2",
-    "ProjectId": "4554121",
-    "Checked": true
-}
