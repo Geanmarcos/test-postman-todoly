@@ -10,32 +10,34 @@ jobs:
   run-newman:
     runs-on: ubuntu-latest
 
+    # Permisos necesarios para que el GITHUB_TOKEN pueda actualizar la rama gh-pages
+    permissions:
+      contents: write
+
     env:
       API_USER: ${{ secrets.API_USER }}
       API_PASSWORD: ${{ secrets.API_PASSWORD }}
 
-
-
     steps:
-      # 1. Checkout del código
+      # 1. Descargar el código fuente del repositorio
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # 2. Instalar Node.js
+      # 2. Configurar el entorno de ejecución Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: '24.x'
 
-      # 3. Instalar Newman
+      # 3. Instalar la herramienta Newman de manera global
       - name: Install Newman
         run: npm install -g newman
 
-      # 4. Instalar Newman Reporters
+      # 4. Instalar el plugin de reportes Allure para Newman
       - name: Install Newman Reporters
         run: npm install --save-dev newman-reporter-allure
 
-      # 5. Ejecutar colección con reporter Allure
+      # 5. Ejecutar los tests de Postman y guardar los resultados crudos (.json)
       - name: Run Postman Collection
         run: |
           mkdir -p allure-results
@@ -47,17 +49,26 @@ jobs:
             --reporter-allure-resultsDir allure-results
         continue-on-error: true
 
-      # 6. Generar el historial y el reporte de Allure usando una acción comunitaria
+      # 6. Descargar el historial previo desde 'gh-pages' para no perder gráficos de tendencias
+      - name: Get Allure history
+        uses: actions/checkout@v7
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-dir
+
+      # 7. Compilar la data nueva con la histórica utilizando una versión fija y estable (v1.15)
       - name: Load Allure history and Generate Report
-        # Nota: Puedes usar acciones como simple-elf/allure-report-action para simplificar la generación
-        uses: simple-elf/allure-report-action@master
+        uses: simple-elf/allure-report-action@v1.15
         if: always()
         with:
-          allure_results: output/allure-results
+          allure_results: allure-results
+          gh_pages: gh-pages-dir
           allure_history: allure-history
           keep_reports: 20
 
-      # 7. Publicar el reporte generado en la rama 'gh-pages'
+      # 8. Desplegar los archivos HTML estáticos procesados a GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         if: always()
