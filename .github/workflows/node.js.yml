@@ -33,21 +33,30 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
-      # 4. Instalar el plugin de reportes Allure para Newman
+      # 4. Instalar la ÚLTIMA versión del reporter Allure para Newman
       - name: Install Newman Reporters
-        run: npm install --save-dev newman-reporter-allure
+        run: npm install --save-dev newman-reporter-allure@latest
 
       # 5. Ejecutar los tests de Postman y guardar los resultados crudos (.json)
       - name: Run Postman Collection
         run: |
-          mkdir -p allure-results
+          mkdir -p output/allure-results
           npx newman run Todoly.postman_collection.json \
             -e Todoly_UAT.postman_environment.json \
             --env-var "userName=$API_USER" \
             --env-var "password=$API_PASSWORD" \
             --reporters cli,allure \
-            --reporter-allure-resultsDir allure-results
+            --reporter-allure-resultsDir output/allure-results
         continue-on-error: true
+
+      # 5b. Verificación rápida de que sí se generaron resultados
+      - name: Debug - Verify allure-results
+        if: always()
+        run: |
+          echo "Contenido de output/allure-results:"
+          ls -la output/allure-results/ || echo "❌ La carpeta no existe"
+          count=$(find output/allure-results -name "*.json" 2>/dev/null | wc -l)
+          echo "Archivos .json encontrados: $count"
 
       # 6. Descargar el historial previo desde 'gh-pages' para no perder gráficos de tendencias
       - name: Get Allure history
@@ -56,17 +65,15 @@ jobs:
         continue-on-error: true
         with:
           ref: gh-pages
-          path: gh-pages-dir
+          path: gh-pages
 
-      # 7. Compilar la data nueva con la histórica utilizando una versión fija y estable (v1.15)
-      - name: Load Allure history and Generate Report
-        uses: simple-elf/allure-report-action@v1.15
+      # 7. Generar el reporte con Allure Report v3 (última versión, con historial nativo)
+      - name: Generate Allure Report (v3)
+        uses: yuvalgabay/allure-v3-report-action@v1
         if: always()
         with:
-          allure_results: allure-results
-          gh_pages: gh-pages-dir
+          allure_results: output/allure-results
           allure_history: allure-history
-          keep_reports: 20
 
       # 8. Desplegar los archivos HTML estáticos procesados a GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
