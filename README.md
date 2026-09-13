@@ -217,38 +217,78 @@ newman run Todoly.postman_collection.json \
 
 # 🚀 Integración Continua
 
-El proyecto cuenta con un pipeline de GitHub Actions que ejecuta automáticamente las pruebas:
+El proyecto implementa un pipeline de GitHub Actions (`node.js.yml`) que ejecuta automáticamente las pruebas de forma continua.
 
 ### Disparadores
+
+El workflow se ejecuta automáticamente en los siguientes eventos:
 
 ```yaml
 on:
   push:
     branches: [main]
-
   pull_request:
     branches: [main]
 ```
 
-### Flujo CI
+### Configuración del Entorno
 
-1. Checkout del repositorio.
-2. Configuración de NodeJS.
-3. Instalación de Newman.
-4. Instalación del Reporter HTML.
-5. Ejecución de la colección Postman.
-6. Generación del reporte HTML.
-7. Publicación del reporte como artefacto.
+- **SO**: Ubuntu (ubuntu-latest)
+- **Node.js**: v24.x
+- **Dependencias instaladas**:
+  - `newman` - Para ejecutar colecciones Postman
+  - `newman-reporter-allure` - Reporter para generar resultados en formato Allure
+  - `allure` - Para generar reportes visuales v3
+
+### Proceso de Ejecución
+
+1. **Checkout** - Descarga el código del repositorio
+2. **Setup Node.js** - Configura Node.js v24.x
+3. **Instalación de dependencias** - Instala Newman, reporter de Allure y CLI de Allure
+4. **Ejecución de tests** - Ejecuta la colección Postman con variables de entorno inyectadas desde Secrets
+5. **Generación de resultados Allure** - Los resultados se guardan en `output/allure-results`
+6. **Recuperación del historial** - Obtiene el reporte anterior desde `gh-pages` para mantener el historial
+7. **Generación del reporte** - Genera el reporte visual con Allure v3
+8. **Publicación en GitHub Pages** - Despliega el reporte en `gh-pages` para acceso permanente
 
 ---
 
-## 📄 Reportes
+## 📊 Reportes y Resultados
 
-Después de cada ejecución:
+### Allure Report v3
 
-- Se genera un reporte HTML.
-- El reporte queda disponible como artefacto dentro de GitHub Actions.
-- Permite revisar resultados, tiempos de ejecución y validaciones ejecutadas.
+El workflow genera reportes avanzados usando **Allure v3** con las siguientes características:
+
+- **Historial persistente** - Mantiene un registro histórico de todas las ejecuciones mediante `history.jsonl`
+- **Reporte visual interactivo** - Acceso a través de GitHub Pages
+- **Métricas detalladas** - Gráficos de tendencias, distribución de resultados y cobertura
+- **Trazabilidad completa** - Asociación entre escenarios, pasos y resultados
+
+### Acceso al reporte
+
+Una vez desplegado, el reporte es accesible en:
+
+```
+https://<username>.github.io/<repository>/
+```
+
+### Configuración de Allure
+
+El workflow utiliza la siguiente configuración (`.allurerc.mjs`):
+
+```javascript
+export default {
+  name: "Newman Todoly Tests",
+  output: "allure-report",
+  historyPath: "./.allure-history/history.jsonl",
+  appendHistory: true,
+};
+```
+
+Esto permite:
+- Agregar nuevos resultados al historial sin perder datos anteriores
+- Generar gráficos de tendencias a lo largo del tiempo
+- Mantener la coherencia del reporte
 
 ---
 
@@ -258,9 +298,11 @@ Después de cada ejecución:
 - Uso de variables dinámicas.
 - Encadenamiento de datos entre requests.
 - Validaciones funcionales automatizadas.
-- Integración Continua (CI).
-- Generación de evidencias de ejecución.
+- Integración Continua (CI) con GitHub Actions.
+- Generación de reportes visuales Allure v3.
+- Historial persistente de ejecuciones.
 - Separación de configuración por entorno.
+- Publicación automática de reportes en GitHub Pages.
 
 ---
 
@@ -269,10 +311,10 @@ Después de cada ejecución:
 - Casos negativos (401, 403, 404, 500).
 - Validaciones de seguridad.
 - Data Driven Testing.
-- Integración con Allure Reports.
 - Cobertura de endpoints adicionales de Todo.ly.
 - Ejecución programada mediante cron jobs.
-- Métricas de calidad y tendencias de ejecución.
+- Notificaciones de resultados (Slack, email).
+- Integración con herramientas de gestión de pruebas.
 
 ---
 
