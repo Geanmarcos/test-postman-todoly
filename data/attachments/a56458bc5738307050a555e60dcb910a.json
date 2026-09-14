@@ -1,0 +1,10 @@
+{
+    "Authorization": "Basic Z2Vhbm1hcmNvcy50YXRhamVAZ21haWwuY29tOlRlc3RpbmdKQiQu",
+    "User-Agent": "PostmanRuntime/7.39.1",
+    "Accept": "*/*",
+    "Cache-Control": "no-cache",
+    "Postman-Token": "637a2d1e-b6bf-4b16-983a-52dbf78a5a61",
+    "Host": "todo.ly",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive"
+}
