@@ -62,30 +62,58 @@ env:
 
 ---
 
-## 🌍 Entorno
+## 🌍 Entorno y Variables
 
-El proyecto utiliza el siguiente entorno:
+### Variables de Entorno (Todoly_UAT.postman_environment.json)
 
-| Variable | Valor |
-|-----------|--------|
-| baseUrl | https://todo.ly/api |
-| formatType | json |
+| Variable | Valor | Tipo | Descripción |
+|----------|--------|------|-------------|
+| baseUrl | https://todo.ly/api | default | URL base de la API |
+| userName | (Secret) | default | Nombre de usuario para autenticación |
+| password | (Secret) | default | Contraseña para autenticación |
+
+### Variables de Colección (Todoly.postman_collection.json)
+
+| Variable | Valor Predeterminado | Descripción |
+|----------|----------------------|-------------|
+| token | (generado dinámicamente) | Token JWT obtenido en login |
+| formatType | json | Formato de respuesta |
+| projectId | (generado dinámicamente) | ID del proyecto creado |
+| projectName | JB API TEST | Nombre del proyecto de prueba |
+| icon | 4 | Icono del proyecto |
+| newProjectName | JB API TEST V2 | Nombre actualizado del proyecto |
+| newIcon | 2 | Icono actualizado |
+| itemId | (generado dinámicamente) | ID del ítem creado |
+| itemName | JB API TEST - ITEM | Nombre del ítem |
+| itemType | 2 | Tipo de ítem |
+| newItemName | JB API TEST - ITEM V2 | Nombre actualizado del ítem |
+| newItemType | 3 | Tipo actualizado del ítem |
+| checkedItem | true | Estado de completado del ítem |
+| projectNameTooShort | (vacío) | Para validar límite mínimo de caracteres |
+| invalidProjectId | 9999999 | ID inexistente para pruebas negativas |
+| itemNameTooShort | (vacío) | Para validar límite mínimo de caracteres en ítems |
+| invalidItemId | 99999999 | ID inexistente para pruebas negativas |
+| projectNameSInjectBd | '; DROP TABLE PROJECTS;-- | Payload SQL Injection |
+| projectNameSInjectXss | (`<script>alert('xss')</script>`) | Payload XSS |
 
 ---
 
 # ✅ Cobertura de Pruebas
 
-## Autenticación
+## 1. Autenticación
 
 | Escenario | Cobertura |
 |------------|------------|
 | Generación de Token | ✅ |
 | Uso de Token para autenticación | ✅ |
 | Cierre de sesión | ✅ |
+| Validación de acceso sin Token (102) | ✅ |
+| Validación de Token inválido | ✅ |
+| Validación con Token expirado | ✅ |
 
 ---
 
-## Gestión de Proyectos
+## 2. Gestión de Proyectos
 
 ### Endpoints cubiertos
 
@@ -96,7 +124,7 @@ El proyecto utiliza el siguiente entorno:
 | Buscar Proyecto | GET | ✅ |
 | Eliminar Proyecto | DELETE | ✅ |
 
-### Validaciones implementadas
+### Validaciones - Casos Positivos
 
 ✅ Status Code 200
 
@@ -110,9 +138,17 @@ El proyecto utiliza el siguiente entorno:
 
 ✅ Confirmación de eliminación del recurso
 
+### Validaciones - Casos Negativos
+
+✅ Crear con nombre demasiado corto (305)
+
+✅ Búsqueda de proyecto con ID inválido (402)
+
+✅ Eliminación de proyecto inexistente (301)
+
 ---
 
-## Gestión de Ítems
+## 3. Gestión de Ítems
 
 ### Endpoints cubiertos
 
@@ -123,7 +159,7 @@ El proyecto utiliza el siguiente entorno:
 | Buscar Ítem | GET | ✅ |
 | Eliminar Ítem | DELETE | ✅ |
 
-### Validaciones implementadas
+### Validaciones - Casos Positivos
 
 ✅ Status Code 200
 
@@ -137,6 +173,24 @@ El proyecto utiliza el siguiente entorno:
 
 ✅ Confirmación de eliminación del ítem
 
+### Validaciones - Casos Negativos
+
+✅ Crear con nombre demasiado corto (308)
+
+✅ Eliminación de ítem inexistente (301)
+
+---
+
+## 4. Pruebas de Seguridad
+
+### SQL Injection
+
+✅ Inyección en campo de BD (`'; DROP TABLE PROJECTS;--`)
+
+✅ Inyección XSS (`<script>alert('xss')</script>`)
+
+✅ Payload mixto validando límite de caracteres
+
 ---
 
 # 📊 Resumen de Cobertura Funcional
@@ -145,9 +199,12 @@ El proyecto utiliza el siguiente entorno:
 |----------|-----------|
 | Authentication | ✅ 100% |
 | Projects CRUD | ✅ 100% |
+| Projects Negative | ✅ 100% |
 | Items CRUD | ✅ 100% |
+| Items Negative | ✅ 100% |
+| Security (SQL Injection/XSS) | ✅ 100% |
 
-### Escenarios Cubiertos
+### Escenarios Positivos Cubiertos
 
 - Login mediante Token.
 - Creación de Proyecto.
@@ -160,31 +217,84 @@ El proyecto utiliza el siguiente entorno:
 - Eliminación de Ítem.
 - Logout.
 
+### Escenarios Negativos Cubiertos
+
+- Acceso sin autenticación.
+- Crear proyecto con contenido inválido.
+- Buscar proyecto con ID inexistente.
+- Eliminar proyecto que no existe.
+- Crear ítem con contenido inválido.
+- Eliminar ítem inexistente.
+- Pruebas de SQL Injection.
+- Pruebas de XSS.
+
 ---
 
 ## 🔄 Flujo de Ejecución
 
-```text
-Open Authentication
-        ↓
-Create Project
-        ↓
-Update Project
-        ↓
-Search Project
-        ↓
-Create Item
-        ↓
-Update Item
-        ↓
-Search Item
-        ↓
-Delete Item
-        ↓
-Delete Project
-        ↓
-Close Authentication
+### Flujo Principal (E2E)
+
 ```
+┌─────────────────────────────────────┐
+│     Login Success                   │
+│     ↓                               │
+│  open-authentication (get token)    │
+└─────────────────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│  Test Happy Path - E2E              │
+│                                     │
+│  ├─ Project CRUD                   │
+│  │  ├─ crear-project               │
+│  │  ├─ update-project              │
+│  │  └─ search-project              │
+│  │                                 │
+│  └─ Item CRUD                      │
+│     ├─ create-item                 │
+│     ├─ update-item                 │
+│     └─ search-item                 │
+│                                     │
+│  └─ Delete Project & Item          │
+│     ├─ delete-project              │
+│     └─ delete-item                 │
+└─────────────────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│  Logout Success                     │
+│  ↓                                  │
+│  close-authentication (invalidate)  │
+└─────────────────────────────────────┘
+```
+
+### Estructura de Test Suites
+
+**1. Login Success** - Obtiene token válido
+
+**2. Test Happy Path - E2E** - Flujo completo exitoso
+   - Projects: Create, Update, Search
+   - Items: Create, Update, Search
+   - Delete: Item, Project
+
+**3. Test Project - Negative** - Validaciones de errores en Proyectos
+   - Error 305: Create Project (nombre demasiado corto)
+   - Error 402: Search Project (ID inválido)
+   - Error 301: Delete Project (no existe)
+
+**4. Test Item - Negative** - Validaciones de errores en Ítems
+   - Error 308: Create Item (nombre demasiado corto)
+   - Error 301: Delete Item (no existe)
+
+**5. Test SQL Injection** - Pruebas de seguridad
+   - SQL Injection en BD
+   - XSS injection
+   - Payload mixto
+
+**6. Test Authentication - Negative** - Validaciones de autenticación
+   - Error 102: Create Project sin autenticación
+   - Error 102: Create Project sin token
+   - Error 102: Create Project con token expirado
+
+**7. Logout Success** - Cierre de sesión
 
 ---
 
@@ -215,11 +325,11 @@ newman run Todoly.postman_collection.json \
 
 ---
 
-# 🚀 Integración Continua
+# 🚀 Integración Continua - GitHub Actions
 
-El proyecto implementa un pipeline de GitHub Actions (`node.js.yml`) que ejecuta automáticamente las pruebas de forma continua.
+El proyecto implementa un pipeline completo de GitHub Actions (`node.js.yml`) que ejecuta automáticamente las pruebas y genera reportes en cada cambio.
 
-### Disparadores
+## Disparadores del Workflow
 
 El workflow se ejecuta automáticamente en los siguientes eventos:
 
@@ -231,25 +341,91 @@ on:
     branches: [main]
 ```
 
-### Configuración del Entorno
+## Configuración del Entorno
 
-- **SO**: Ubuntu (ubuntu-latest)
+- **Sistema Operativo**: Ubuntu (ubuntu-latest)
 - **Node.js**: v24.x
 - **Dependencias instaladas**:
-  - `newman` - Para ejecutar colecciones Postman
-  - `newman-reporter-allure` - Reporter para generar resultados en formato Allure
-  - `allure` - Para generar reportes visuales v3
+  - `newman` - Ejecutor de colecciones Postman
+  - `newman-reporter-allure` - Generador de reportes en formato Allure
+  - `allure` - CLI v3 para generar reportes visuales
 
-### Proceso de Ejecución
+## Pasos del Pipeline
 
-1. **Checkout** - Descarga el código del repositorio
-2. **Setup Node.js** - Configura Node.js v24.x
-3. **Instalación de dependencias** - Instala Newman, reporter de Allure y CLI de Allure
-4. **Ejecución de tests** - Ejecuta la colección Postman con variables de entorno inyectadas desde Secrets
-5. **Generación de resultados Allure** - Los resultados se guardan en `output/allure-results`
-6. **Recuperación del historial** - Obtiene el reporte anterior desde `gh-pages` para mantener el historial
-7. **Generación del reporte** - Genera el reporte visual con Allure v3
-8. **Publicación en GitHub Pages** - Despliega el reporte en `gh-pages` para acceso permanente
+| Paso | Descripción | Comando |
+|------|-------------|---------|
+| 1. Checkout | Descarga el código del repositorio | `actions/checkout@v7` |
+| 2. Setup Node.js | Configura Node.js v24.x | `actions/setup-node@v7` |
+| 3. Instalar dependencias | Instala Newman, reporters y Allure CLI | `npm install --save-dev newman newman-reporter-allure allure` |
+| 4. Ejecutar tests | Ejecuta la colección Postman con inyección de credenciales desde Secrets | `newman run` |
+| 5. Recuperar historial | Obtiene el reporte anterior desde rama gh-pages | `actions/checkout@v7 (ref: gh-pages)` |
+| 6. Restaurar historial | Copia `history.jsonl` para mantener persistencia | Copia archivo |
+| 7. Crear configuración Allure | Genera `.allurerc.mjs` con configuración de historial | Crea archivo |
+| 8. Generar reporte | Genera reporte visual con Allure v3 | `npx allure generate` |
+| 9. Publicar en GitHub Pages | Despliega el reporte en rama gh-pages | `peaceiris/actions-gh-pages@v4` |
+
+## Variables de Entorno (Secrets)
+
+Por seguridad, las credenciales se inyectan desde GitHub Secrets:
+
+```yaml
+env:
+  API_USER: ${{ secrets.API_USER }}
+  API_PASSWORD: ${{ secrets.API_PASSWORD }}
+```
+
+Luego se pasan a Newman como variables:
+
+```bash
+--env-var "userName=$API_USER" \
+--env-var "password=$API_PASSWORD"
+```
+
+**Nota**: Configura estos secrets en: `Settings → Secrets and variables → Actions`
+
+## Ejecución de Tests en el Workflow
+
+```bash
+mkdir -p output/allure-results
+npx newman run Todoly.postman_collection.json \
+  -e Todoly_UAT.postman_environment.json \
+  --env-var "userName=$API_USER" \
+  --env-var "password=$API_PASSWORD" \
+  --reporters cli,allure \
+  --reporter-allure-resultsDir output/allure-results
+```
+
+**Parámetros utilizados**:
+- `--reporters cli,allure` - Genera salida en CLI y formato Allure
+- `--reporter-allure-resultsDir` - Directorio donde se guardan resultados JSON
+- `continue-on-error: true` - El workflow continúa incluso si fallan tests
+
+## Gestión del Historial en Allure v3
+
+El workflow mantiene un historial persistente de ejecuciones:
+
+### Configuración de Allure (`.allurerc.mjs`)
+
+```javascript
+export default {
+  name: "Newman Todoly Tests",
+  output: "allure-report",
+  historyPath: "./.allure-history/history.jsonl",
+  appendHistory: true,
+};
+```
+
+**Características**:
+- `historyPath` - Archivo único JSONL para historial (Allure v3)
+- `appendHistory: true` - Agrega nuevos resultados sin perder datos anteriores
+- Permite generar gráficos de tendencias a lo largo del tiempo
+
+### Flujo del Historial
+
+1. Recupera `history.jsonl` de la rama `gh-pages` (ejecuciones anteriores)
+2. Restaura el archivo en `.allure-history/`
+3. Genera nuevo reporte que agrega al historial existente
+4. Publica reporte + historial actualizado en `gh-pages`
 
 ---
 
@@ -308,13 +484,14 @@ Esto permite:
 
 ## 🚧 Mejoras Futuras
 
-- Casos negativos (401, 403, 404, 500).
-- Validaciones de seguridad.
-- Data Driven Testing.
-- Cobertura de endpoints adicionales de Todo.ly.
+- Data Driven Testing (parametrización de tests).
+- Cobertura de endpoints adicionales de Todo.ly (carpetas, filtros, etc.).
 - Ejecución programada mediante cron jobs.
 - Notificaciones de resultados (Slack, email).
-- Integración con herramientas de gestión de pruebas.
+- Integración con herramientas de gestión de pruebas (Jira, TestRail).
+- Tests de rendimiento y carga.
+- Análisis de cobertura de endpoints.
+- Documentación interactiva de API (Swagger/OpenAPI).
 
 ---
 
