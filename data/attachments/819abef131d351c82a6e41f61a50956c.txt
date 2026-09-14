@@ -1,0 +1,31 @@
+var response = pm.response.json(); 
+
+// Validar que el status sea 200
+pm.test("Status code es 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Error schema válido", () => {
+    const schema = {
+        type: "object",
+        required: ["ErrorMessage", "ErrorCode"],
+        properties: {
+            ErrorMessage: {
+                type: "string"
+            },
+            ErrorCode: {
+                type: "number"
+            }
+        }
+    };
+
+    pm.response.to.have.jsonSchema(schema);
+});
+
+pm.test("ErrorCode es 308", () => {
+    pm.expect(response.ErrorCode).to.eql(308);
+});
+
+pm.test("Mensaje: Too Short Item Name", () => {
+    pm.expect(response.ErrorMessage).to.eql("Too Short Item Name");
+});

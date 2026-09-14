@@ -1,0 +1,2 @@
+let nameProject = "A".repeat(5000);
+pm.collectionVariables.set("projectNameTooSmall", nameProject);

@@ -1,0 +1,4 @@
+{
+    "Content": "<script>alert('xss')</script>",
+    "Icon": 4
+}

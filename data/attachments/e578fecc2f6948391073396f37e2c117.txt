@@ -1,0 +1,32 @@
+var response = pm.response.json(); 
+
+// Validar que el status sea 200
+pm.test("Status code es 200", function () {
+    pm.response.to.have.status(200);
+});
+
+
+pm.test("Schema de error válido", () => {
+    const schema = {
+        type: "object",
+        required: ["ErrorMessage", "ErrorCode"],
+        properties: {
+            ErrorMessage: { type: "string" },
+            ErrorCode: { type: "number" }
+        }
+    };
+
+    pm.response.to.have.jsonSchema(schema);
+});
+
+
+const json = pm.response.json();
+
+pm.test("ErrorCode es 402", () => {
+    pm.expect(json.ErrorCode).to.eql(402);
+});
+
+pm.test("Mensaje: You don't have access to this Project", () => {
+    pm.expect(response.ErrorMessage)
+        .to.eql("You don't have access to this Project");
+});

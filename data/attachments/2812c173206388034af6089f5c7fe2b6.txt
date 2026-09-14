@@ -1,0 +1,27 @@
+var response = pm.response.json(); 
+
+// Validar que el status sea 200
+pm.test("Status code es 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Schema de error válido", () => {
+    const schema = {
+        type: "object",
+        required: ["ErrorMessage", "ErrorCode"],
+        properties: {
+            ErrorMessage: { type: "string" },
+            ErrorCode: { type: "number" }
+        }
+    };
+
+    pm.response.to.have.jsonSchema(schema);
+});
+
+pm.test("ErrorCode 301", () => {
+    pm.expect(response.ErrorCode).to.eql(301);
+});
+
+pm.test("Mensaje: Invalid Project Id", () => {
+    pm.expect(response.ErrorMessage).to.eql("Invalid Id");
+});

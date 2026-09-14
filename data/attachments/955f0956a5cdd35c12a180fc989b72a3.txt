@@ -1,0 +1,38 @@
+var response = pm.response.json(); 
+
+// Validar que la respuesta sea en formato JSON
+pm.test("Respuesta es JSON", function () {
+    pm.response.to.be.json;
+});
+
+pm.test("Schema de error válido", () => {
+
+    const schema = {
+        type: "object",
+        required: ["ErrorMessage", "ErrorCode"],
+        properties: {
+            ErrorMessage: {
+                type: "string"
+            },
+            ErrorCode: {
+                type: "number"
+            }
+        }
+    };
+
+    pm.response.to.have.jsonSchema(schema);
+});
+ 
+// Validar que el status sea 305
+pm.test("Status code es 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("ErrorCode es 305", () => {
+    pm.expect(response.ErrorCode).to.eql(305);
+});
+
+pm.test("Mensaje: Too Short Project Name", () => {
+    pm.expect(response.ErrorMessage).to.eql("Too Short Project Name");
+});
+

@@ -1,0 +1,4 @@
+{
+    "Content": "'; DROP TABLE PROJECTS;--",
+    "Icon": 4
+}

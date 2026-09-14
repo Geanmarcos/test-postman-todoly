@@ -1,0 +1,28 @@
+var response = pm.response.json(); 
+
+// Validar que la respuesta sea en formato JSON
+pm.test("Respuesta es JSON", function () {
+    pm.response.to.be.json;
+});
+ 
+// Validar que el status sea 200
+pm.test("Status code es 200", function () {
+    pm.response.to.have.status(200);
+    var id = response.Id; 
+    pm.collectionVariables.set("projectId", id);
+});
+
+pm.test("No devuelve error interno", () => {
+    pm.expect(pm.response.code).to.not.eql(500);
+});
+
+// Validar nombre de proyecto
+pm.test("Verificar nombre de proyecto", function () {
+    pm.expect(response.Content).to.eql(pm.collectionVariables.get("projectNameSInjectXss"));
+});
+
+// Validar icono
+pm.test("Verificar icono", function () {
+    let icon = parseInt(pm.collectionVariables.get("icon"), 10);
+    pm.expect(response.Icon).to.eql(icon);
+});
